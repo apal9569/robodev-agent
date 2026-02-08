@@ -6,11 +6,23 @@ class OllamaClient:
         self.model = model
         self.host = host.rstrip("/")
 
-    def chat(self, messages):
-        payload = json.dumps({"model": self.model, "messages": messages, "stream": False,
-                                "options": {"temperature": 0.3}}).encode("utf-8")
-        
-        req = urllib.request.Request(f"{self.host}/api/chat", data=payload, headers={"Content-Type": "application/json"}, method="POST")
-        with urllib.request.urlopen(req, timeout=120) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-        return data["message"]["content"]
+    def chat(self, prompt: str, timeout: int = 300) -> str:
+        payload = json.dumps({
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "stream": False,
+        }).encode()
+        req = urllib.request.Request(
+            f"{self.host}/api/chat",
+            data=payload,
+            headers={"Content-Type": "application/json"},
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                data = json.loads(resp.read().decode())
+            return data["message"]["content"]
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode()
+            raise RuntimeError(
+                f"Ollama API error {e.code}: {error_body}"
+            ) from e

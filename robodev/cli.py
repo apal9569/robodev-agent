@@ -24,6 +24,10 @@ def main():
 
     p5 = sub.add_parser("i", help="Interactive mode")
 
+    p6 = sub.add_parser("digest", help="Daily robotics & AI news digest")
+    p6.add_argument("--force", action="store_true", help="Force refresh of today's digest")
+    p6.add_argument("--email", action="store_true", help="Send digest via email")
+
     args = parser.parse_args()
     mem = AgentMemory.load()
     agent = RoboDevAgent(memory=mem)
@@ -64,5 +68,11 @@ def main():
         agent.interactive()
         return
     
+    if args.cmd == "digest":
+        from robodev.daily_digest.relevant_feeds import build_digest
+        result = build_digest(agent.llm, mem, force=args.force, email=args.email)
+        print(result)
+        return
+
 if __name__ == "__main__":
     main()
