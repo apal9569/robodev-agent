@@ -65,7 +65,7 @@ def build_digest(llm, memory, force: bool = False, email: bool = False) -> str:
     prompt = FILTER_PROMPT_TEMPLATE.format(
         stack=m.get("stack", "ROS2"),
         robot_type=m.get("robot_type", "general"),
-        interests=m.get("interests", "motion planning, control, perception, SLAM, manipulation, sim-to-real, Simulation"),
+        interests="motion planning, control, perception, SLAM, manipulation, sim-to-real, Simulation",
         article_block=article_block,
         today=today,
     )
@@ -73,7 +73,7 @@ def build_digest(llm, memory, force: bool = False, email: bool = False) -> str:
     print(f"📡 Fetched {len(articles)} articles, prompt size: {len(prompt)} chars")
 
     try:
-        raw = llm.chat(prompt, timeout=300)
+        raw = llm.chat(prompt, timeout=300, task="digest")
     except Exception as e:
         result = f"❌ LLM call failed: {e}"
         if email:

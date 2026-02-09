@@ -14,14 +14,14 @@ import shlex
 class RoboDevAgent:
     def __init__(self, memory):
         self.memory = memory
-        self.llm = OllamaClient(model=memory.data.get("model", "llama3.1"))
+        self.llm = OllamaClient()
         
     def brainstorm(self, query: str) -> str:
         msgs = [
             {"role": "system", "content": system_prompt(self.memory)},
             {"role": "user", "content": brainstorm_prompt(self.memory, query=query)}
         ]
-        resp = self.llm.chat(msgs)
+        resp = self.llm.chat(msgs, task="brainstorm")
         return render_brainstorm(resp)
     
     def codegen(self, query: str, lang: str = "python", xml: str = None, out_dir: Path = Path("./generated")) -> str:
@@ -29,7 +29,7 @@ class RoboDevAgent:
             {"role": "system", "content": system_prompt(self.memory)},
             {"role": "user", "content": codegen_prompt(self.memory, query=query, lang=lang, xml=xml)}
         ]
-        resp = self.llm.chat(msgs)
+        resp = self.llm.chat(msgs, task="codegen")
         files = write_artifacts(resp, out_dir)
         return render_codegen(resp, files)
     
@@ -38,7 +38,7 @@ class RoboDevAgent:
             {"role": "system", "content": system_prompt(self.memory)},
             {"role": "user", "content": diagnose_prompt(self.memory, log_text=log_text)}
         ]
-        resp = self.llm.chat(msgs)
+        resp = self.llm.chat(msgs, task="diagnose")
         return render_diagnose(resp)
     
     def interactive(self):
